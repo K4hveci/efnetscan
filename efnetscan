@@ -1,0 +1,42 @@
+#! /usr/bin/python3
+
+import optparse as opt
+import scapy.all as scapy
+import subprocess as sp
+
+# getting parameters
+def get_parameters():
+    parse_obj = opt.OptionParser()
+    parse_obj.add_option("-r", "--range", dest="range", help="ip range")
+
+    (user_inputs, arguments) = parse_obj.parse_args()
+    user_range = user_inputs.range
+    return user_range
+
+# creating arp
+def create_arp_req(user_range):
+    arp_req = scapy.ARP(pdst=user_range)
+    return arp_req
+
+
+# broadcast part
+def broadcast(arp_req):
+    broadcast_packet = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+    big_packet = broadcast_packet/arp_req  # combined packet of arp and boradcast packets
+    print_results(big_packet)
+
+# getting response
+def print_results(big_packet):
+    (answered_list, unanswered_list) = scapy.srp(big_packet, timeout=1)
+    answered_list.summary()
+
+
+
+def __main__():
+    user_range = "192.168.0.0/24"
+    user_range = get_parameters()
+    arp_req = create_arp_req(user_range)
+    broadcast(arp_req)
+
+
+__main__()
